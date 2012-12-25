@@ -5,6 +5,7 @@ require "open3"
 
 class MOVfile
 	#出力テキストをヒアドキュメントで格納しておく
+	#TODO:@@outputの外部textファイルへの移行
 	@@output = <<"EOS"
 ----------ここからコピー----------
  <%= togo_img(day = '#{date}', file = '#{date}_0.jpg', title = 'FIGURE_TITLE') %>
@@ -23,9 +24,25 @@ editorの指定 C:camtasia stadio, D:DesktopToMovie, K:Key Note, F:Final Cut, W:
 動画を途中から再生するには settings のところを設定します。
 文字だけの場合は引数2個、画像を貼る場合には引数が3個必要です。
 EOS
+	#サーバー上のmovie file格納場所path
+	@@tv_path = "/var/www/togotv"
+
+	#TODO:動作のテスト
+	def initialize(file, filename, date)
+		@file_subst = file
+		@filename = filename.to_s
+		raise ArgumentError, "movファイルしか指定できません" unless @filename =~ /\.mov$/
+		@upload_date = setDate(date.to_s)
+
+		#propertiesで情報を格納するHashをセット
+		@params = Hash.new
+		
+	end
 
 	#helper method from movie_up.rb
 	private
+
+	#set @params from system call "ffmpeg"
 	def properties(info)
 	  info = info.split("\n")
 	  info.each do |line|
@@ -55,12 +72,15 @@ EOS
 	  end
 	end
 	
-	# setting date
-	def date
-	  if ARGV[1] =~ /^\d\d\d\d\d\d\d\d/ || ARGV[0] =~ /^\d\d\d\d\d\d\d\d/
+	#setting date
+	def setDate(arg_date)
+		#match to "yyyymmdd" format -> return self
+	  if arg_date =~ /^\d\d\d\d\d\d\d\d/
 	    return $&
-	  elsif ARGV[1] =~ /^\d\d\d\d\d\d/ || ARGV[0] =~ /^\d\d\d\d\d\d/
+		#match to "yymmdd" format -> add 20yymmdd
+	  elsif arg_date[1] =~ /^\d\d\d\d\d\d/ || arg_date[0] =~ /^\d\d\d\d\d\d/
 	    return "20" + $&
+		#
 	  else
 	    t = Time.now
 	    return t.strftime("%Y%m%d")
