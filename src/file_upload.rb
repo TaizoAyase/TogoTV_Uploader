@@ -17,12 +17,17 @@ put '/upload' do
 	#params[:file][:tempfile]にFileオブジェクトとして格納される
 	if params[:file]
 		ap params #for debug
+
+		#set some valiable for constructor
 		file = params[:file][:tempfile]
 		file_path = params[:file][:tempfile].path
 		filename = params[:file][:filename]
-		upload_date = params[:date] if params[:date]
+		upload_date = params[:date]
+
 		mov = MOVfile.new(file, filename, upload_date)
+		ap mov #for debug
 		#FileUtils.cp(file_path, "./") #for debug
+		
 		@mes = "#{filename} upload completed!!!!!!!!!"
 		haml :upload
 	end
@@ -41,7 +46,7 @@ __END__
 				%label{:for => "file"} MOVファイルを選択:
 				%input{:type => "file", :name => "file"}
 			%p
-				%label{:for => "text"} Uploadする日付を選択(yymmdd形式で):
+				%label{:for => "date"} Uploadする日付を選択(yymmdd形式で):
 				%input{:type => "text", :name => "date"}
 			%p
 				%label{:for => "togoserver_pass"} password:

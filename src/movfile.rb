@@ -5,15 +5,16 @@ require "open3"
 
 class MOVfile
 	#出力テキストをヒアドキュメントで格納しておく
-	#TODO:@@outputの外部textファイルへの移行
+	#TODO:@@outputの外部textファイルへの移行と変数・メソッドの改名
+=begin
 	@@output = <<"EOS"
 ----------ここからコピー----------
- <%= togo_img(day = '#{date}', file = '#{date}_0.jpg', title = 'FIGURE_TITLE') %>
+ <%= togo_img(day = '#{@upload_date}', file = '#{@upload_date}_0.jpg', title = 'FIGURE_TITLE') %>
 ここに本文を書きます
- <%= togo_mov(mov_file = '#{filename}', img_file = '#{date}_0.jpg', x = '#{@params[:width]}', y = '#{@params[:height]}', duration = '#{duration}', editor = 'C', keyword = 'KEYWORDS', references = 'PMID,PMID') %>
+ <%= togo_mov(mov_file = '#{@filename}', img_file = '#{@upload_date}_0.jpg', x = '#{@params[:width]}', y = '#{@params[:height]}', duration = '#{duration}', editor = 'C', keyword = 'KEYWORDS', references = 'PMID,PMID') %>
  <%= netabare_start 'ここを押すと動画のスーパーが読めます。', 'button' %>
  <blockquote>
-ここに@Mozk_氏謹製スクリプトの結果をコピペ
+(ここに@Mozk_氏謹製スクリプトの結果をコピペ)
  </blockquote>
  <%= netabare_end %>
 ----------ここまでコピー----------
@@ -24,6 +25,8 @@ editorの指定 C:camtasia stadio, D:DesktopToMovie, K:Key Note, F:Final Cut, W:
 動画を途中から再生するには settings のところを設定します。
 文字だけの場合は引数2個、画像を貼る場合には引数が3個必要です。
 EOS
+=end
+
 	#サーバー上のmovie file格納場所path
 	@@tv_path = "/var/www/togotv"
 
@@ -39,7 +42,7 @@ EOS
 		
 	end
 
-	#helper method from movie_up.rb
+	#helper methods from movie_up.rb
 	private
 
 	#set @params from system call "ffmpeg"
@@ -74,16 +77,25 @@ EOS
 	
 	#setting date
 	def setDate(arg_date)
+		match_yyyymmdd = arg_date =~ /^\d{8}/ || @filename =~ /^\d{8}/
+		match_yymmdd = arg_date =~ /^\d{6}/ || @filename =~ /^\d{6}/
 		#match to "yyyymmdd" format -> return self
-	  if arg_date =~ /^\d\d\d\d\d\d\d\d/
+		if match_yyyymmdd
 	    return $&
-		#match to "yymmdd" format -> add 20yymmdd
-	  elsif arg_date[1] =~ /^\d\d\d\d\d\d/ || arg_date[0] =~ /^\d\d\d\d\d\d/
+		#match to "yymmdd" format -> return 20yymmdd
+		elsif match_yymmdd
 	    return "20" + $&
-		#
-	  else
+		else
 	    t = Time.now
 	    return t.strftime("%Y%m%d")
-	  end
+		end
+	end
+
+	#setting duration
+	def setDuration
+		h, m, s = @params[:time].split(":")
+		@duration = h.to_i * 60 * 60 + 
+								m.to_i * 60 + 
+								s.to_i + 1
 	end
 end
