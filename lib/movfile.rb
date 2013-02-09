@@ -7,13 +7,20 @@ require "./lib/nikki_default"
 class MOVfile
 	include Nikki
 
+	#アップロードサーバー
+	@@server = "togotv@togotv.dbcls.jp"
 	#サーバー上のmovie file格納場所path
+	# -*- !!!!!!Public folder!!!!!! -*-*
 	@@tv_path = "/var/www/togotv"
 
-	def initialize(file, filename, date)
-		@file_subst = file
-		@filename = filename.to_s
+	#set getter methods for debug
+	attr_reader :file_subst, :filename, :upload_date, :params
+	
+	def initialize(filepath, filename, date)
+		@tmpfile_path = filepath
+		@filename = filename
 		raise ArgumentError, "movファイルしか指定できません" unless @filename =~ /\.mov$/
+		rename_tmpfile
 		@upload_date = setDate(date.to_s)
 
 		#propertiesで情報を格納するHashをセット
@@ -22,16 +29,34 @@ class MOVfile
 
 	#TODO:各インスタンスメソッドの定義及びテスト
 	def setPropaties
+		pict_command = "ffmpeg -y -i #{filename} -f image2 -r 1 -t 0:0:0.001 -an #{@upload_date}_0.jpg"
+		stdin, stdout, stderr = Open3.popen3(pict_command)
+		info = stderr.read.encode("UTF-8", "Shift_JIS") #出力に日本語が含まれている...
+		stdin.close
+		stdout.close
+		stderr.close
 
-
+		properties(info)
+		setDuration
 	end
 
+	#TODO:file_pathを指定すること
 	def scp!
+		system("scp #{@file_path} #{@@server}:")
+	end
 
+	def output
+		@nikki = setNikki
 	end
 
 	#helper methods from movie_up.rb
 	private
+
+	def rename_tmpfile
+		new_filepath = File.dirname(@tmpfile_path) + "/" + @filename
+		File.rename(@tmpfile_path, new_filepath)
+		@file_path = new_filepath
+	end
 
 	#set @params from system call "ffmpeg"
 	def properties(info)
@@ -56,11 +81,11 @@ class MOVfile
 	      size,           = video[2].split("\s")
 	      @params[:width], @params[:height] = size.split("x")
 	      @params[:frate], = video[3].split("\s")
-
   	  elsif line =~ /^Output/
     	  break
 	    end
 	  end
+		return nil
 	end
 	
 	#setting date

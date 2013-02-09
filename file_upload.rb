@@ -3,8 +3,11 @@
 require "sinatra"
 require "haml"
 require "ap"
-require "fileutils"
 require "./lib/movfile"
+
+# set tempfile directory
+ENV['TMPDIR'] = "./tmp/"
+@mes = ""
 
 get '/' do
 	#hamlテンプレートに飛ばす
@@ -12,24 +15,32 @@ get '/' do
 	haml :upload_form
 end
 
-put '/upload' do
+post '/upload' do
 	#ページからアップロードされたファイルは
 	#params[:file][:tempfile]にFileオブジェクトとして格納される
 	if params[:file]
-		ap params #for debug
-
-		#set some valiable for constructor
-		file = params[:file][:tempfile]
+		#set some valiables for constructor
 		file_path = params[:file][:tempfile].path
 		filename = params[:file][:filename]
 		upload_date = params[:date]
+		passwd = params[:togoserver_pass]
 
-		mov = MOVfile.new(file, filename, upload_date)
-		ap mov #for debug
-		#FileUtils.cp(file_path, "./") #for debug
+		begin
+			mov = MOVfile.new(file_path, filename, upload_date)
+			#mov.scp!(passwd)
+			mov.setPropaties
+			@nikki_text = mov.output
+		rescue ArgumentError => e
+			puts e.message
+			@mes = e.message
+			redirect "/"
+		end
 		
-		@mes = "#{filename} upload completed!!!!!!!!!"
+		@mes = "Upload completed!"
 		haml :uploaded
+	else
+		@mes = "MOVファイルを指定してください"
+		redirect "/"
 	end
 end
 
