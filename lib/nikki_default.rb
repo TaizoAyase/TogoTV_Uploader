@@ -4,9 +4,9 @@ module Nikki
 	def setNikki#(upload_date, filename, params)
 <<EOS
 ----------ここからコピー----------
- <%= togo_img(day = '#{@upload_date}', file = '#{@upload_date}_0.jpg', title = 'FIGURE_TITLE') %>
+ <%= togo_img(day = '#{@date}', file = '#{@date}_0.jpg', title = 'FIGURE_TITLE') %>
 ここに本文を書きます
- <%= togo_mov(mov_file = '#{@filename}', img_file = '#{@upload_date}_0.jpg', x = '#{@params[:width]}', y = '#{@params[:height]}', duration = '#{@duration}', editor = 'C', keyword = 'KEYWORDS', references = 'PMID,PMID') %>
+ <%= togo_mov(mov_file = '#{@filename}', img_file = '#{@date}_0.jpg', x = '#{@params[:width]}', y = '#{@params[:height]}', duration = '#{@duration}', editor = 'C', keyword = 'KEYWORDS', references = 'PMID,PMID') %>
  <%= netabare_start 'ここを押すと動画のスーパーが読めます。', 'button' %>
  <blockquote>
 (ここに__Hukidashi_extractor__の結果をコピペ)
