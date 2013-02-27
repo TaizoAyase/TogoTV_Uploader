@@ -2,24 +2,17 @@
 
 require "fileutils"
 require "open3"
-require "./lib/nikki_default"
-require "./lib/TempFile"
 require "net/ssh"
 require "net/scp"
+require "yaml"
+
+require "./lib/nikki_default"
+require "./lib/TempFile"
 
 class MOVfile
 	include Nikki
 
-	#アップロードサーバー
-	@@server = "togotv.dbcls.jp"
-	#@@server = "192.168.11.9"
-	#サーバー上のtogotv公開フォルダ
-	# -*- !!!!!!Public folder!!!!!! -*-*
-	@@tv_path = "/var/www/togotv"
-	
-	#サーバ上のscpアップロード先
-	SERVER_PATH = "/home/togotv/"
-	#SERVER_PATH = "/share/Public" # for AyaseNAS
+	@@config = YAML.load_file("server_config.yaml")
 
 	def initialize(tempfile_path, filename, date)
 		@tempfile = TempFile.new(tempfile_path, filename, date)
@@ -32,7 +25,8 @@ class MOVfile
 	def upload!(username, pass)
 		scp!(username, pass)
 		chmod_remote!(username, pass)
-		#setPropaties #TODO:remoteでこれを行うには？
+		setPropaties
+		put_to_public
 	end
 
 	# output nikki text
@@ -75,6 +69,16 @@ class MOVfile
 		Net::SSH.start(@@server, username, {:password => pass}) do |ssh|
 			ssh.exec! 
 		end
+	end
+
+	# 公開用フォルダに移動
+	# TODO:implement
+	def put_to_public
+		# TODO:MOVのfilenameの拡張子をstreamingに変換したStringを生成
+		# .streamingに.movからシンボリックリンクを作製
+		# サムネイルを移動
+		# movを移動
+		# streamingを移動
 	end
 
 	# setting date

@@ -4,7 +4,7 @@ require "ap"
 require "fileutils"
 
 class TempFile
-	def initialize(tempfile_path, filename, date)
+	def initialize(tempfile_path, filename, date = "")
 		@tempfile_path = tempfile_path
 		@filename = filename
 		raise ArgumentError, "movファイルしか指定できません" unless @filename =~ /\.mov$/

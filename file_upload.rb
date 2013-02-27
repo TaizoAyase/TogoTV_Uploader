@@ -3,7 +3,8 @@
 require "sinatra"
 require "haml"
 require "ap"
-require "./lib/movfile"
+
+require "./lib/movfile.rb"
 
 # set tempfile directory
 ENV['TMPDIR'] = "./tmp/"
@@ -30,10 +31,10 @@ post '/upload' do
 			mov = MOVfile.new(file_path, filename, upload_date)
 			mov.upload!(username, passwd)
 			@nikki_text = mov.output
-		#rescue ArgumentError => e
-			#puts e.message
-			#@mes = e.message
-			#redirect "/"
+		rescue ArgumentError => e
+			puts e.message
+			@mes = e.message
+			redirect "/"
 		end
 		
 		@mes = "Upload completed!"
