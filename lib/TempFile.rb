@@ -8,7 +8,8 @@ class TempFile
 		@tempfile_path = tempfile_path
 		@filename = filename
 		raise ArgumentError, "movファイルしか指定できません" unless @filename =~ /\.mov$/
-		@upload_date = setDate(date.to_s)
+		@upload_date = setDate(date.to_s.gsub(/-/, ""))
+		date.to_s.gsub(/-/, "")
 		rename_tempfile
 	end
 
@@ -40,8 +41,8 @@ class TempFile
 
 	# setting date
 	def setDate(arg_date)
-		match_yyyymmdd = arg_date =~ /^\d{8}/ || @filename =~ /^\d{8}/
 		match_yymmdd = arg_date =~ /^\d{6}/ || @filename =~ /^\d{6}/
+		match_yyyymmdd = arg_date =~ /^\d{8}/ || @filename =~ /^\d{8}/
 		# match to "yyyymmdd" format -> return yymmdd
 		if match_yyyymmdd
 	    return $&.sub(/^\d\d/, "")

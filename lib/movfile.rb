@@ -12,7 +12,7 @@ require "./lib/TempFile"
 class MOVfile
 	include Nikki
 
-	@@config = YAML.load_file("server_config.yaml")
+	@@config = YAML.load_file("./lib/server_config.yaml")[:"-t"]
 
 	def initialize(tempfile_path, filename, date)
 		@tempfile = TempFile.new(tempfile_path, filename, date)
@@ -26,7 +26,7 @@ class MOVfile
 		scp!(username, pass)
 		chmod_remote!(username, pass)
 		setPropaties
-		put_to_public
+		put_to_public(username, pass)
 	end
 
 	# output nikki text
@@ -38,7 +38,7 @@ class MOVfile
 
 	# call ffmpeg command
 	def setPropaties
-		pict_command = "ffmpeg -y -i #{@filename} -f image2 -r 1 -t 0:0:0.001 -an #{@date}_0.jpg"
+		pict_command = "ffmpeg -y -i ./tmp/#{@filename} -f image2 -r 1 -t 0:0:0.001 -an ./tmp/20#{@date}_0.jpg"
 		stdin, stdout, stderr = Open3.popen3(pict_command)
 		info = stderr.read.encode("UTF-8", "Shift_JIS")
 		stdin.close
@@ -51,34 +51,45 @@ class MOVfile
 	
 	# TogoTV serverにSCP
 	def scp!(username, pass)
-		Net::SCP.start(@@server, username, {:password => pass, :compression => true}) do |scp|
-			channel = scp.upload(@tempfile.get_upload_file_path, SERVER_PATH)
+		Net::SCP.start(@@config[:server], username, {:password => pass, :compression => true}) do |scp|
+			channel = scp.upload(@tempfile.get_upload_file_path, @@config[:server_path])
 			channel.wait
 		end
 	end
 
 	# chmod 644 on TogoTV server
 	def chmod_remote!(username, pass)
-		Net::SSH.start(@@server, username, {:password => pass}) do |ssh|
-			ssh.exec! "chmod 644 #{SERVER_PATH + @filename}"
+		Net::SSH.start(@@config[:server], username, {:password => pass}) do |ssh|
+			ssh.exec! "chmod 644 #{@@config[:server_path] + @filename}"
 		end
 	end
 
 	# call ffmpeg command in remote server
-	def setPropaties_remote!(username, pass)
-		Net::SSH.start(@@server, username, {:password => pass}) do |ssh|
-			ssh.exec! 
-		end
-	end
+	#def setPropaties_remote!(username, pass)
+		#Net::SSH.start(@@config[:server], username, {:password => pass}) do |ssh|
+			#ssh.exec! 
+		#end
+	#end
 
 	# 公開用フォルダに移動
-	# TODO:implement
-	def put_to_public
-		# TODO:MOVのfilenameの拡張子をstreamingに変換したStringを生成
-		# .streamingに.movからシンボリックリンクを作製
+	def put_to_public(username, pass)
+		# MOVのfilenameの拡張子をstreamingに変換したStringを生成
+		@streaming_filename = @filename.sub(/\.mov/, ".streaming")
+
+		Net::SSH.start(@@config[:server], username, {:password => pass}) do |ssh|
+			# .streamingに.movからシンボリックリンクを作製
+			ssh.exec! "ln -s #{@@config[:server_path] + @filename} #{@@config[:server_path] + @streaming_filename}"
+			# movを移動
+			ssh.exec! "mv #{@@config[:server_path] + @filename} #{@@config[:tv_path]}/movie/"
+			# streamingを移動
+			ssh.exec! "mv -i #{@@config[:server_path] + @streaming_filename} #{@@config[:tv_path]}/movie/"
+		end
+
 		# サムネイルを移動
-		# movを移動
-		# streamingを移動
+		Net::SCP.start(@@config[:server], username, {:password => pass, :compression => true}) do |scp|
+			channel = scp.upload("./tmp/20#{@date}_0.jpg", "#{@@config[:tv_path]}/images/")
+			channel.wait
+		end
 	end
 
 	# setting date

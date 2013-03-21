@@ -1,0 +1,8 @@
+tmp/
+lib/server_config.yaml
+lib/make_config.rb
+lib/movie_up.rb
+public/files
+public/files/.DSstore
+test/
+120829Google.mov
