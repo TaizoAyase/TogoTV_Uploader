@@ -7,15 +7,15 @@ require "net/scp"
 require "yaml"
 
 require "./lib/nikki_default"
-require "./lib/TempFile"
+require "./lib/mov_tempfile"
+require "./lib/upload_file"
 
 class MOVfile
 	include Nikki
-
-	@@config = YAML.load_file("./lib/server_config.yaml")[:"-t"]
+	include UploadFile
 
 	def initialize(tempfile_path, filename, date)
-		@tempfile = TempFile.new(tempfile_path, filename, date)
+		@tempfile = MOVTempFile.new(tempfile_path, filename, date)
 		@filename = @tempfile.get_file_name
 		@date = @tempfile.get_date
 		# propertiesで情報を格納するHashをセット
@@ -24,8 +24,8 @@ class MOVfile
 
 	def upload!(username, pass)
 		scp!(username, pass)
-		chmod_remote!(username, pass)
-		setPropaties
+		chmod_remote!(username, pass) #TODO:is this method nessessary???
+		setPropaties # set @params hash
 		put_to_public(username, pass)
 	end
 
@@ -34,6 +34,7 @@ class MOVfile
 		@nikki = setNikki
 	end
 
+	private :scp!, :chmod_remote!
 	private
 
 	# call ffmpeg command
@@ -49,24 +50,9 @@ class MOVfile
 		setDuration
 	end
 	
-	# TogoTV serverにSCP
-	def scp!(username, pass)
-		Net::SCP.start(@@config[:server], username, {:password => pass, :compression => true}) do |scp|
-			channel = scp.upload(@tempfile.get_upload_file_path, @@config[:server_path])
-			channel.wait
-		end
-	end
-
-	# chmod 644 on TogoTV server
-	def chmod_remote!(username, pass)
-		Net::SSH.start(@@config[:server], username, {:password => pass}) do |ssh|
-			ssh.exec! "chmod 644 #{@@config[:server_path] + @filename}"
-		end
-	end
-
 	# call ffmpeg command in remote server
 	#def setPropaties_remote!(username, pass)
-		#Net::SSH.start(@@config[:server], username, {:password => pass}) do |ssh|
+		#Net::SSH.start(CONFIG[:server], username, {:password => pass}) do |ssh|
 			#ssh.exec! 
 		#end
 	#end
@@ -76,18 +62,19 @@ class MOVfile
 		# MOVのfilenameの拡張子をstreamingに変換したStringを生成
 		@streaming_filename = @filename.sub(/\.mov/, ".streaming")
 
-		Net::SSH.start(@@config[:server], username, {:password => pass}) do |ssh|
+		Net::SSH.start(CONFIG[:server], username, {:password => pass}) do |ssh|
 			# .streamingに.movからシンボリックリンクを作製
-			ssh.exec! "ln -s #{@@config[:server_path] + @filename} #{@@config[:server_path] + @streaming_filename}"
+			streaming_path = CONFIG[:server_path] + @streaming_filename
+			ssh.exec! "ln -s #{CONFIG[:server_path] + @filename} #{streaming_path}"
 			# movを移動
-			ssh.exec! "mv #{@@config[:server_path] + @filename} #{@@config[:tv_path]}/movie/"
+			ssh.exec! "mv #{CONFIG[:server_path] + @filename} #{CONFIG[:tv_path]}/movie/"
 			# streamingを移動
-			ssh.exec! "mv -i #{@@config[:server_path] + @streaming_filename} #{@@config[:tv_path]}/movie/"
+			ssh.exec! "mv -i #{CONFIG[:server_path] + @streaming_filename} #{CONFIG[:tv_path]}/movie/"
 		end
 
 		# サムネイルを移動
-		Net::SCP.start(@@config[:server], username, {:password => pass, :compression => true}) do |scp|
-			channel = scp.upload("./tmp/20#{@date}_0.jpg", "#{@@config[:tv_path]}/images/")
+		Net::SCP.start(CONFIG[:server], username, {:password => pass, :compression => true}) do |scp|
+			channel = scp.upload("./tmp/20#{@date}_0.jpg", "#{CONFIG[:tv_path]}/images/")
 			channel.wait
 		end
 	end
