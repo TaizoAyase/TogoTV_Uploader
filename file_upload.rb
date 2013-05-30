@@ -5,7 +5,7 @@ require 'haml'
 require 'ap'
 
 require './lib/movfile.rb'
-require './lib/file_controler'
+require './lib/file_controller'
 
 # set tempfile directory
 ENV['TMPDIR'] = './tmp/'
@@ -23,20 +23,22 @@ post '/upload' do
 
   unless params[:file]
 		@mes = 'MOVファイルを指定してください'
-		redirect '/'
+l		redirect '/'
   end
   
   begin
-    controler = FileControler.new(params)
-    controler.upload!
-    @nikki_text
+    controller = FileController.new(params)
+    controller.upload!
+    #@nikki_text
   rescue Exception => e
+    ap e
     puts e.message
     @mes = e.message
     redirect '/'
   end
     
-
+=begin
+### former version that do not use file controller
 	if params[:file]
 		# set some valiables for constructor
 		file_path = params[:file][:tempfile].path
@@ -61,6 +63,7 @@ post '/upload' do
 		@mes = 'MOVファイルを指定してください'
 		redirect '/'
 	end
+=end
 end
 
 __END__

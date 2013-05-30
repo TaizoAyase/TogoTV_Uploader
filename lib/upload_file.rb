@@ -22,7 +22,12 @@ module UploadFile
   private
 
 	# TogoTV serverにSCP
+  # @tempfile < BaseTempFileオブジェクトのget_upload_file_pathを使う
 	def scp!(username, pass)
+    # get_upload_file_pathに応答しない場合はRunTimeError
+    # TODO:BUG...RuntimeError here
+    raise "Runtime Error in UploadFile module" unless @tempfile.respond_to? :get_upload_file_path
+
 		Net::SCP.start(SERVER, username, {:password => pass, :compression => true}) do |scp|
 			channel = scp.upload(@tempfile.get_upload_file_path, CONFIG[:server_path])
 			channel.wait

@@ -1,10 +1,6 @@
 #encoding: utf-8
 
-require 'fileutils'
 require 'open3'
-require 'net/ssh'
-require 'net/scp'
-require 'yaml'
 
 require './lib/nikki_default'
 require './lib/mov_tempfile'
@@ -45,36 +41,13 @@ class MOVfile
 	
 	# call ffmpeg command
   def call_ffmpeg
-   	pict_command = "ffmpeg -y -i ./tmp/#{@filename} -f image2 -r 1 -t 0:0:0.001 -an ./tmp/20#{@date}_0.jpg"
+    thumbnail_path = "./tmp/20#{@date}_0.jpg"
+   	pict_command = "ffmpeg -y -i ./tmp/#{@filename} -f image2 -r 1 -t 0:0:0.001 -an #{thumbnail_path}"
     stdin, stdout, stderr = Open3.popen3(pict_command)
     info = stderr.read.encode('UTF-8', 'Shift_JIS')
     stdin.close; stdout.close; stderr.close
     info
   end
-
-	# setting date
-	def setDate(arg_date)
-		match_yyyymmdd = arg_date =~ /^\d{8}/ || @filename =~ /^\d{8}/
-		match_yymmdd = arg_date =~ /^\d{6}/ || @filename =~ /^\d{6}/
-		# match to 'yyyymmdd' format -> return yymmdd
-		if match_yyyymmdd
-	    return $&.sub(/^\d\d/, '')
-		# match to 'yymmdd' format -> return self
-		elsif match_yymmdd
-	    return $&
-		else
-	    t = Time.now
-	    return t.strftime("%y%m%d")
-		end
-	end
-
-	#setting duration
-	def setDuration
-		h, m, s = @params[:time].split(':')
-		@duration = h.to_i * 60 * 60 + 
-								m.to_i * 60 + 
-								s.to_i + 1
-	end
 
 	# set @params
 	def parse_properties(info)
@@ -105,4 +78,29 @@ class MOVfile
 	  end
 		return nil
 	end
+
+	#setting duration
+	def setDuration
+		h, m, s = @params[:time].split(':')
+		@duration = h.to_i * 60 * 60 + 
+								m.to_i * 60 + 
+								s.to_i + 1
+	end
+
+	# setting date
+	def setDate(arg_date)
+		match_yyyymmdd = arg_date =~ /^\d{8}/ || @filename =~ /^\d{8}/
+		match_yymmdd = arg_date =~ /^\d{6}/ || @filename =~ /^\d{6}/
+		# match to 'yyyymmdd' format -> return yymmdd
+		if match_yyyymmdd
+	    return $&.sub(/^\d\d/, '')
+		# match to 'yymmdd' format -> return self
+		elsif match_yymmdd
+	    return $&
+		else
+	    t = Time.now
+	    return t.strftime("%y%m%d")
+		end
+	end
+
 end
