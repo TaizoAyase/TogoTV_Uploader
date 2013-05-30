@@ -1,14 +1,15 @@
 #encoding: utf-8
 
-require "sinatra"
-require "haml"
-require "ap"
+require 'sinatra'
+require 'haml'
+require 'ap'
 
-require "./lib/movfile.rb"
+require './lib/movfile.rb'
+require './lib/file_controler'
 
 # set tempfile directory
-ENV['TMPDIR'] = "./tmp/"
-@mes = ""
+ENV['TMPDIR'] = './tmp/'
+@mes = ''
 
 get '/' do
 	# hamlテンプレートに飛ばす
@@ -19,6 +20,23 @@ end
 post '/upload' do
 	#ページからアップロードされたファイルは
 	# params[:file][:tempfile]にFileオブジェクトとして格納される
+
+  unless params[:file]
+		@mes = 'MOVファイルを指定してください'
+		redirect '/'
+  end
+  
+  begin
+    controler = FileControler.new(params)
+    controler.upload!
+    @nikki_text
+  rescue Exception => e
+    puts e.message
+    @mes = e.message
+    redirect '/'
+  end
+    
+
 	if params[:file]
 		# set some valiables for constructor
 		file_path = params[:file][:tempfile].path
@@ -34,14 +52,14 @@ post '/upload' do
 		rescue ArgumentError => e
 			puts e.message
 			@mes = e.message
-			redirect "/"
+			redirect '/'
 		end
 		
-		@mes = "Upload completed!"
+		@mes = 'Upload completed!'
 		haml :uploaded
 	else
-		@mes = "MOVファイルを指定してください"
-		redirect "/"
+		@mes = 'MOVファイルを指定してください'
+		redirect '/'
 	end
 end
 

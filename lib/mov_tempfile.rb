@@ -2,8 +2,9 @@
 
 require "ap"
 require "fileutils"
+require './lib/base_tempfile'
 
-class MOVTempFile
+class MOVTempFile < BaseTempFile
 	def initialize(tempfile_path, filename, date = "")
 		@tempfile_path = tempfile_path
 		@filename = filename
@@ -11,19 +12,6 @@ class MOVTempFile
 		@upload_date = setDate(date.to_s.gsub(/-/, ""))
 		date.to_s.gsub(/-/, "")
 		rename_tempfile
-	end
-
-	# some getter methods
-	def get_upload_file_path
-		@upload_file_path
-	end
-
-	def get_file_name
-		File.basename(@upload_file_path)
-	end
-
-	def get_date
-		@upload_date
 	end
 
 	private

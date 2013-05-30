@@ -1,18 +1,25 @@
 #encoding: utf-8
 
-require "ap"
-require "net/scp"
-require "net/ssh"
-require "./lib/mov_tempfile"
-require "yaml"
+require 'ap'
+require 'net/scp'
+require 'net/ssh'
+require './lib/mov_tempfile'
+require 'yaml'
 
 # module for MOV class & Streaming file
 module UploadFile
 
 	# set some configuration for server
-	CONFIG = YAML.load_file("./lib/server_config.yaml")[:"-t"]
+	CONFIG = YAML.load_file('./lib/server_config.yaml')[:'-t']
   SERVER = CONFIG[:server]
   SERVER_PATH = CONFIG[:server_path]
+
+	def upload!(username, pass)
+		scp!(username, pass)
+		#put_to_public(username, pass)
+	end
+
+  private
 
 	# TogoTV serverにSCP
 	def scp!(username, pass)
@@ -32,7 +39,7 @@ module UploadFile
 	# 公開用フォルダに移動
 	def put_to_public(username, pass)
 		# MOVのfilenameの拡張子をstreamingに変換したStringを生成
-		@streaming_filename = @filename.sub(/\.mov/, ".streaming")
+		@streaming_filename = @filename.sub(/\.mov/, '.streaming')
 
 		Net::SSH.start(SERVER, username, {:password => pass}) do |ssh|
 			# .streamingに.movからシンボリックリンクを作製
@@ -48,7 +55,8 @@ module UploadFile
 
 		# サムネイルを移動
 		Net::SCP.start(SERVER, username, {:password => pass, :compression => true}) do |scp|
-			channel = scp.upload("./tmp/20#{@date}_0.jpg", "#{CONFIG[:tv_path]}/images/")
+      thumbnail_path = "#{CONFIG[:tv_path]}/images/"
+			channel = scp.upload("./tmp/20#{@date}_0.jpg", thumbnail_path)
 			channel.wait
 		end
 	end
