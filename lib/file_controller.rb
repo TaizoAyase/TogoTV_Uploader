@@ -1,9 +1,12 @@
 #encoding: utf-8
 
 require 'ap'
+require 'yaml'
 
 class FileController
   attr_reader :nikki
+
+  CONFIG = YAML.load_file('./lib/server_config.yaml')[:'-t']
 
   def initialize(params)  
     # no file in args raises error
@@ -24,8 +27,8 @@ class FileController
   end
 
   def upload!
-    @mov.upload!(@username, @passwd)
-    @thumbnail.upload!(@username, @passwd)
+    @mov.upload!(@username, @passwd, CONFIG[:movie_path])
+    @thumbnail.upload!(@username, @passwd, CONFIG[:thumbnail_path])
     @nikki = get_nikki
   end
 

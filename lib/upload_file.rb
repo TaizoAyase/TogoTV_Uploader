@@ -12,10 +12,11 @@ module UploadFile
 	# set some configuration for server
 	CONFIG = YAML.load_file('./lib/server_config.yaml')[:'-t']
   SERVER = CONFIG[:server]
-  SERVER_PATH = CONFIG[:server_path]
+  MOVIE_PATH = CONFIG[:movie_path]
+  THUMBNAIL_PATH = CONFIG[:thumbnail_path]
 
-	def upload!(username, pass)
-		scp!(username, pass)
+	def upload!(username, pass, to)
+		scp!(username, pass, to)
 		#put_to_public(username, pass)
 	end
 
@@ -23,13 +24,13 @@ module UploadFile
 
 	# TogoTV serverにSCP
   # @tempfile < BaseTempFileオブジェクトのget_upload_file_pathを使う
-	def scp!(username, pass)
+	def scp!(username, pass, dir_to)
     # get_upload_file_pathに応答しない場合はRunTimeError
     # TODO:BUG...RuntimeError here
     raise "Runtime Error in UploadFile module" unless @tempfile.respond_to? :get_upload_file_path
 
 		Net::SCP.start(SERVER, username, {:password => pass, :compression => true}) do |scp|
-			channel = scp.upload(@tempfile.get_upload_file_path, CONFIG[:server_path])
+			channel = scp.upload(@tempfile.get_upload_file_path, dir_to)
 			channel.wait
 		end
 	end
