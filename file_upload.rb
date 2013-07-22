@@ -28,8 +28,8 @@ class TogoUploaderApp < Sinatra::Base
 		# params[:file][:tempfile]にFileオブジェクトとして格納される
 
 	  unless params[:file]
-			@mes = 'MOVファイルを指定してください'
-	l		redirect '/'
+			 session[:message] = 'MOVファイルを指定してください'
+       redirect '/'
 	  end
 	  
 	  begin
