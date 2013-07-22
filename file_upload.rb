@@ -9,12 +9,17 @@ require './lib/file_controller'
 
 # set tempfile directory
 ENV['TMPDIR'] = './tmp/'
-@mes = ''
 
 class TogoUploaderApp < Sinatra::Base
+
+  configure do
+    enable :sessions
+  end
+
 	get '/' do
 		# hamlテンプレートに飛ばす
 		# Fileのアップローダー
+    @mes = session.has_key?(:message) ? session[:message] : ''
 		haml :upload_form
 	end
 
@@ -34,7 +39,7 @@ class TogoUploaderApp < Sinatra::Base
 	  rescue Exception => e
 	    ap e
 	    puts e.message
-	    @mes = e.message
+      session[:message] = e.message
 	    redirect '/'
 	  end
 	    
@@ -67,5 +72,7 @@ class TogoUploaderApp < Sinatra::Base
 =end
 	end
 end
+
+TogoUploaderApp.run!
 
 __END__
