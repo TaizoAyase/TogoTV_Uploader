@@ -2,7 +2,6 @@
 
 require 'sinatra'
 require 'haml'
-require 'ap'
 
 require './lib/movfile.rb'
 require './lib/file_controller'
@@ -27,49 +26,12 @@ class TogoUploaderApp < Sinatra::Base
 		#ページからアップロードされたファイルは
 		# params[:file][:tempfile]にFileオブジェクトとして格納される
 
-	  unless params[:file]
-			 session[:message] = 'MOVファイルを指定してください'
-       redirect '/'
-	  end
-	  
-	  begin
-	    controller = FileController.new(params)
-	    controller.upload!
-      session[:nikki] = controller.get_nikki
-	  rescue Exception => e
-      # if some error, back to top page
-      session[:message] = e.message
-	    redirect '/'
-	  end
-	    
-=begin
-	### former version that do not use file controller
-		if params[:file]
-			# set some valiables for constructor
-			file_path = params[:file][:tempfile].path
-			filename = params[:file][:filename]
-			upload_date = params[:date]
-			username = params[:togoserver_username]
-			passwd = params[:togoserver_pass]
-
-			begin
-				mov = MOVfile.new(file_path, filename, upload_date)
-				mov.upload!(username, passwd)
-				@nikki_text = mov.output
-			rescue ArgumentError => e
-				puts e.message
-				@mes = e.message
-				redirect '/'
-			end
-			
-			@mes = 'Upload completed!'
-			haml :uploaded
-		else
-			@mes = 'MOVファイルを指定してください'
-			redirect '/'
-		end
-=end
+	  controller = FileController.new(params)
+	  controller.upload!
+    @nikki_text = controller.get_nikki
+    haml :uploaded
 	end
+
 end
 
 TogoUploaderApp.run!

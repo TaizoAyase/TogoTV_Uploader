@@ -11,6 +11,8 @@ class MOVfile
 	include Nikki
 	include UploadFile
 
+  attr_reader :date
+
 	def initialize(tempfile_path, filename, date)
 		@tempfile = MOVTempFile.new(tempfile_path, filename, date)
 		@filename = @tempfile.get_file_name

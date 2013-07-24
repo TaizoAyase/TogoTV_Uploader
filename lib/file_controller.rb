@@ -37,4 +37,8 @@ class FileController
   def get_nikki
     @mov.output
   end
+
+  def get_date
+    @mov.date
+  end
 end
