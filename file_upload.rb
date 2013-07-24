@@ -35,10 +35,9 @@ class TogoUploaderApp < Sinatra::Base
 	  begin
 	    controller = FileController.new(params)
 	    controller.upload!
-	    #@nikki_text
+      session[:nikki] = controller.get_nikki
 	  rescue Exception => e
-	    ap e
-	    puts e.message
+      # if some error, back to top page
       session[:message] = e.message
 	    redirect '/'
 	  end

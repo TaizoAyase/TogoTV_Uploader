@@ -16,5 +16,4 @@ class BaseTempFile
 	def get_date
 		@upload_date
 	end
-
 end

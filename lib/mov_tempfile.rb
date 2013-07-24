@@ -9,6 +9,7 @@ class MOVTempFile < BaseTempFile
 		@tempfile_path = tempfile_path
 		@filename = filename
     
+    # raise error if mov is not uploaded
 		raise ArgumentError, "movファイルしか指定できません" unless @filename =~ /\.mov$/
 
 		@upload_date = setDate(date.to_s.gsub(/-/, ""))
@@ -22,8 +23,8 @@ class MOVTempFile < BaseTempFile
 	def rename_tempfile
 		if @filename =~ /^\d{8}/ # match for yyyymmdd
 			new_filepath = File.dirname(@tempfile_path) + "/" + @filename
-    elsif @filename =~ /^\d{8}/ # match for yymmdd
-      new_filepath = File.dirname(@tempfile_path) + "/" + @upload_date + @filename.gsub(/^\d{8}/, '')
+    elsif @filename =~ /^\d{6}/ # match for yymmdd
+      new_filepath = File.dirname(@tempfile_path) + "/" + @upload_date + @filename.gsub(/^\d{6}/, '')
 		else
 			new_filepath = File.dirname(@tempfile_path) + "/" + @upload_date + @filename
 		end

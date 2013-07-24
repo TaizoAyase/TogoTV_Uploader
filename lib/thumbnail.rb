@@ -7,7 +7,7 @@ class Thumbnail
   include UploadFile
 
   def initialize(tmpfile_path)
-    @tmpfile = ThumbnailTempFile.new(tmpfile_path)
+    @tempfile = ThumbnailTempFile.new(tmpfile_path)
   end
 
 end

@@ -21,6 +21,7 @@ class FileController
     @username = params[:togoserver_username]
     @passwd = params[:togoserver_pass]
     
+    # create instance of MOV and thumbnail
     @mov = MOVfile.new(file_path, filename, upload_date)
     thumbnail_path = @mov.create_thumbnail
     @thumbnail = Thumbnail.new(thumbnail_path)
@@ -31,8 +32,6 @@ class FileController
     @thumbnail.upload!(@username, @passwd, CONFIG[:thumbnail_path])
     @nikki = get_nikki
   end
-
-  private
 
   # get nikki text from MOVfile object
   def get_nikki

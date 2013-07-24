@@ -12,8 +12,6 @@ module UploadFile
 	# set some configuration for server
 	CONFIG = YAML.load_file('./lib/server_config.yaml')[:'-t']
   SERVER = CONFIG[:server]
-  MOVIE_PATH = CONFIG[:movie_path]
-  THUMBNAIL_PATH = CONFIG[:thumbnail_path]
 
 	def upload!(username, pass, to)
 		scp!(username, pass, to)
