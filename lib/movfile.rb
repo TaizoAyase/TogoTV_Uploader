@@ -27,6 +27,18 @@ class MOVfile
     "./tmp/20#{@date}_0.jpg" 
   end
 
+  def create_streaming(username, pass)
+    # MOVのfilenameの拡張子をstreamingに変換したStringを生成
+		streaming_filename = @filename.sub(/\.mov/, '.streaming')
+
+		Net::SSH.start(SERVER, username, {:password => pass}) do |ssh|
+			# .streamingに.movからシンボリックリンクを作製
+			streaming_path = CONFIG[:server_path] + streaming_filename
+      com = "ln -s #{CONFIG[:server_path] + @filename} #{streaming_path}"
+			ssh.exec! com
+    end
+  end
+
 	# output nikki text
 	def output
 		setNikki
