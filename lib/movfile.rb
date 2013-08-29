@@ -31,12 +31,8 @@ class MOVfile
     # MOVのfilenameの拡張子をstreamingに変換したStringを生成
 		streaming_filename = @filename.sub(/\.mov/, '.streaming')
 
-		Net::SSH.start(SERVER, username, {:password => pass}) do |ssh|
-			# .streamingに.movからシンボリックリンクを作製
-			streaming_path = CONFIG[:server_path] + streaming_filename
-      com = "ln -s #{CONFIG[:server_path] + @filename} #{streaming_path}"
-			ssh.exec! com
-    end
+    com = "cd #{CONFIG[:movie_path]}; ln -s #{@filename} #{streaming_filename}"
+    ssh_command(com, username, pass)
   end
 
 	# output nikki text

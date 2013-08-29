@@ -15,7 +15,6 @@ module UploadFile
 
 	def upload!(username, pass, to)
 		scp!(username, pass, to)
-		#put_to_public(username, pass)
 	end
 
   private
@@ -32,11 +31,17 @@ module UploadFile
 		end
 	end
 
+  # universal method for executing the command in SSH
+  def ssh_command(com, username, pass)
+    Net::SSH.start(SERVER, username, {:password => pass}) do |ssh|
+      ssh.exec! com
+    end
+  end
+
 	# chmod 644 on TogoTV server
 	def chmod_remote!(username, pass)
-		Net::SSH.start(SERVER, username, {:password => pass}) do |ssh|
-			ssh.exec! "chmod 644 #{CONFIG[:server_path] + @filename}"
-		end
+    com = "chmod 644 #{CONFIG[:server_path] + @filename}"
+    ssh_command(com, username, pass)
 	end
 
 end

@@ -29,6 +29,7 @@ class FileController
 
   def upload!
     @mov.upload!(@username, @passwd, CONFIG[:movie_path])
+    @mov.create_streaming(@username, @passwd)
     @thumbnail.upload!(@username, @passwd, CONFIG[:thumbnail_path])
     @nikki = get_nikki
   end
