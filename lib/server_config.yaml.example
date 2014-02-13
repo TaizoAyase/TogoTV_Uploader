@@ -1,5 +1,5 @@
 ---
 :-t:
-  :server: HOST_NAME
-  :movie_path: TARGET_DIR_FOR_MOVIE
-  :thumbnail_path: TARGET_DIR_FOR_THUMBNAIL
+  :server: www.example.com
+  :movie_path: /path/to/movie_dir
+  :thumbnail_path: /path/to/thumbnail_dir
