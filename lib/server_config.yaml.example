@@ -1,0 +1,5 @@
+---
+:-t:
+  :server: HOST_NAME
+  :movie_path: TARGET_DIR_FOR_MOVIE
+  :thumbnail_path: TARGET_DIR_FOR_THUMBNAIL
